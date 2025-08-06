@@ -1,21 +1,17 @@
--- models/marts/dim_books.sql
+-- models/staging/stg_books.sql
 
 SELECT
-    book_id,
     title,
-    author,
-    rating,
     price,
-    is_available,
-    num_reviews,
-    description,
-    image_url,
-    book_url,
-    -- إضافة عمود جديد لتصنيف السعر
+    rating AS rating_numeric,
+    extraction_date AS extracted_at,
     CASE
-        WHEN price < 15.00 THEN 'Low'
-        WHEN price >= 15.00 AND price < 30.00 THEN 'Medium'
-        WHEN price >= 30.00 THEN 'High'
+        WHEN price < 20.00 THEN 'Cheap'
+        WHEN price >= 20.00 AND price <= 40.00 THEN 'Decent'
+        WHEN price > 40.00 THEN 'Expensive'
         ELSE 'Unknown'
     END AS price_segment
-FROM {{ ref('stg_books') }}
+FROM
+    {{ source('books_db_source', 'BOOKS_RAW') }}
+WHERE
+    title IS NOT NULL AND price IS NOT NULL
