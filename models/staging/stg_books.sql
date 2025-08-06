@@ -1,12 +1,17 @@
+-- models/staging/stg_books.sql
+
 SELECT
     title,
     price,
-    rating_numeric,
-    price_segment,
-    extracted_at
+    rating AS rating_numeric,
+    extraction_date AS extracted_at,
+    CASE
+        WHEN price < 20.00 THEN 'Cheap'
+        WHEN price >= 20.00 AND price <= 40.00 THEN 'Decent'
+        WHEN price > 40.00 THEN 'Expensive'
+        ELSE 'Unknown'
+    END AS price_segment
 FROM
-    {{ ref('stg_books') }}
+    {{ source('books_db_source', 'BOOKS_RAW') }}
 WHERE
-    rating_numeric > 0
-ORDER BY
-    extracted_at DESC, title ASC
+    title IS NOT NULL AND price IS NOT NULL
